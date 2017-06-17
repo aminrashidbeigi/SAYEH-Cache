@@ -21,7 +21,7 @@ architecture behavioral of TagValidArray is
         identifier : process(clk)
         begin
             if wren = '1' then
-                tag_valid_array(to_integer(unsigned(address))) <= wrdata;
+                tag_valid_array(to_integer(unsigned(address)))(3 downto 0) <= wrdata;
             end if;
             if invalidate = '1' then
                 tag_valid_array(to_integer(unsigned(address)))(4) <= not invalidate;
