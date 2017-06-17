@@ -16,7 +16,7 @@ architecture behavioral of orco is
     signal datas : date_array := (others => "0000000000000000");
     begin
         data <= date_array(to_integer(unsigned(address)));
-        identifier : process(wren)
+        identifier : process(clk)
         begin
             if wren = '1' then
                 date_array(to_integer(unsigned(address))) <= wrdata;
