@@ -13,7 +13,7 @@ end orco;
 
 architecture behavioral of orco is
     type date_array is array(0 to 63) of std_logic_vector(31 downto 0);
-    signal datas : date_array := (others => "0000000000000000");
+    signal datas : date_array := (others => "00000000000000000000000000000000");
     begin
         data <= date_array(to_integer(unsigned(address)));
         identifier : process(clk)
