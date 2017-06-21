@@ -8,7 +8,7 @@ entity MissHitLogic is
     tag: IN std_logic_vector(3 downto 0);
     w0 : IN std_logic_vector(4 downto 0);
     w1 : IN std_logic_vector(4 downto 0);
-    hit : IN std_logic;
+    hit : OUT std_logic;
     w0_valid : OUT std_logic;
     w1_valid : OUT std_logic
     );
