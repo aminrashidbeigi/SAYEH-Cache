@@ -1,5 +1,8 @@
+-- Author : Amin Rashidbeigi
+
 library IEEE;
 use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
 
 entity DataArray is
     port(
@@ -12,14 +15,14 @@ entity DataArray is
 end DataArray;
 
 architecture behavioral of DataArray is
-    type date_array is array(0 to 63) of std_logic_vector(31 downto 0);
-    signal datas : date_array := (others => "00000000000000000000000000000000");
+    type data_array is array(0 to 63) of std_logic_vector(31 downto 0);
+    signal datas : data_array := (others => "00000000000000000000000000000000");
     begin
-        data <= date_array(to_integer(unsigned(address)));
+        data <= datas(to_integer(unsigned(address)));
         identifier : process(clk)
         begin
             if wren = '1' then
-                date_array(to_integer(unsigned(address))) <= wrdata;
+                datas(to_integer(unsigned(address))) <= wrdata;
             end if;
         end process;
 end behavioral;
