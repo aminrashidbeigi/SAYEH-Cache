@@ -8,7 +8,8 @@ entity MRUArray is
     port(
     clk: in std_logic;
     index: in std_logic_vector(5 downto 0);
-    w_valids: in std_logic_vector(1 downto 0);
+    w0_valid: in std_logic;
+    w1_valid: in std_logic;
     enable: in std_logic;
     reset: in std_logic;
     validWay: out std_logic
@@ -19,12 +20,12 @@ architecture behavioral of MRUArray is
     type dataArray is array (63 downto 0) of integer;
     signal w0Array: dataArray:= (others => 0);
     signal w1Array: dataArray:= (others => 0);
-    signal integeredAddress : integer := to_integer(unsigned(index));
+    signal integeredAddress: integer := to_integer(unsigned(index));
     signal lastWay: std_logic;
     signal lastAddress: std_logic_vector(5 downto 0);
-    signal way:std_logic;
+    signal way: std_logic;
     begin
-        way <= w_valids(1) or (not w_valids(0));
+        way <= w1_valid or (not w0_valid);
         integeredAddress <= to_integer(unsigned(index));
         process(clk)
         begin
@@ -38,7 +39,7 @@ architecture behavioral of MRUArray is
                 lastWay <= 'Z';
                 lastAddress <= "ZZZZZZ";
             elsif enable = '1' then
-                if (way /= lastWay or index /= lastAddress) the
+                if (way /= lastWay or index /= lastAddress) then
                     if way = '0' then
                         w0Array(integeredAddress) <= w0Array(integeredAddress) + 1;
                     elsif way = '1' then

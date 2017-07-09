@@ -8,15 +8,22 @@ entity CacheController is
     port(
     clk: IN std_logic;
     hit: IN std_logic;
-    validWay: IN std_logic_vector(1 downto 0);
+    w0_valid : IN std_logic;
+    w1_valid : IN std_logic;
     is_read: in std_logic;
     is_write: in std_logic;
-    chache_data_ready : IN std_logic;
+    cache_data_ready : IN std_logic;
     mem_data_ready : IN std_logic;
-    mem_wren: OUT std_logic;
-    reset_n: OUT std_logic;
-    cache_wren: OUT std_logic;
-    invalidate: OUT std_logic;
+    tva0valid : in std_logic;
+    tva1valid : in std_logic;
+    invalidate0 : out std_logic;
+    invalidate1 : out std_logic;
+    write_mem: OUT std_logic;
+    read_mem : OUT std_logic;
+    wren0: OUT std_logic;
+    wren1: OUT std_logic;
+    reset_n0: OUT std_logic;
+    reset_n1: OUT std_logic;
     MRUEnable: OUT std_logic;
     MRUReset : OUT std_logic
     );
@@ -24,54 +31,79 @@ end CacheController;
 
 architecture behavioral of CacheController is
 
-    type state is (initial_state, read_state, write_state);
+    type state is (reset_state, initial_state, read_state, write_state, glitch_state, read_from_mem_state, write_to_cache_state);
     signal current_state, next_state : state := initial_state;
+    signal which_way : std_logic := '0';
 
     begin
         process( clk )
 	    begin
 		   if rising_edge(clk) then
-               state <= next_state;
+               current_state <= next_state;
            end if;
        end process;
 
        process(clk)
        begin
-            cache_wren <= '0';
-            invalidate <= '0';
-            mem_wren <= '0';
-            reset_n <= '0';
+            invalidate0 <= '0';
+            invalidate1 <= '0';
+				wren0 <= '0';
+				wren1 <= '0';
+            write_mem <= '0';
+            read_mem <= '0';
+            reset_n0 <= '0';
+            reset_n1 <= '0';
             MRUEnable <= '1';
             MRUReset <= '0';
 
-            case( current_state ) is
+            case(current_state) is
+                when reset_state =>
+                    next_state <= initial_state;
+
                 when initial_state =>
-                    if (is_read) then
-                        if chache_data_ready = '1' then
-                            if hit = '0' then
-                                cache_wren <= '1';
-                            end if;
-                            if validWay(0) and validWay(0) = '0'  then
-                                invalidate <= '1';
-                            end if;
-                            current_state <= read_state;
-                        end if;
-                    elsif (is_write) then
-                        mem_wren <= '1';
-                        cache_wren <= '1';
-                        if validWay(0) and validWay(0) = '0'  then
-                            invalidate <= '1';
-                        end if;
-                        current_state <= write_state;
+                    if (is_read = '1') then
+                        next_state <= read_state;
+                    elsif (is_write = '1') then
+                        next_state <= write_state;
                     end if;
 
                 when read_state =>
-                    next_state <= initial_state;
+                    if hit = '1' then
+                        next_state <= reset_state;
+                    else
+                        read_mem <= '1';
+                        next_state <= read_from_mem_state;
+                    end if;
+
                 when write_state =>
-                    mem_wren <= '1';
-                    next_state <= initial_state;
+                    if w0_valid = '1' then
+                        invalidate0 <= '1';
+                        wren0 <= '1';
+                    end if;
+                    if w1_valid = '1' then
+                        invalidate1 <= '1';
+                        wren1 <= '1';
+                    end if;
+                    next_state <= reset_state;
+
+                when read_from_mem_state =>
+                    read_mem <= '1';
+                    next_state <= glitch_state;
+
+                when glitch_state =>
+                    read_mem <= '1';
+                    next_state <= write_to_cache_state;
+
+                when write_to_cache_state =>
+                    if tva0valid = '0' then
+                        wren0 <= '1';
+                    elsif tva1valid = '0' then
+                        wren1 <= '1';
+                    end if;
+                    next_state <= reset_state;
+
                 when others =>
-                    next_state <= initial_state;
+                    next_state <= reset_state;
             end case;
         end process;
 end behavioral;
