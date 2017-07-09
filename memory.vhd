@@ -11,10 +11,14 @@ use IEEE.numeric_std.all;
 entity memory is
 	generic (blocksize : integer := 1024);
 
-	port (clk, readmem, writemem : in std_logic;
-		addressbus: in std_logic_vector (15 downto 0);
-		databus : inout std_logic_vector (15 downto 0);
-		memdataready : out std_logic);
+	port (
+	clk : in std_logic;
+	readmem : in std_logic;
+	writemem : in std_logic;
+	addressbus : in std_logic_vector (15 downto 0);
+	databus : inout std_logic_vector (15 downto 0);
+	memdataready : out std_logic
+	);
 end entity memory;
 
 architecture behavioral of memory is

@@ -6,26 +6,26 @@ use IEEE.numeric_std.all;
 
 entity MRUArray is
     port(
-    address : in STD_LOGIC_VECTOR(5 downto 0);
-    k : in STD_LOGIC;
-    clk : in STD_LOGIC;
-    enable : in STD_LOGIC;
-    reset : in STD_LOGIC;
-    validWay : out STD_LOGIC
-    );
+    clk: in std_logic;
+    index: in std_logic_vector(5 downto 0);
+    w_valids: in std_logic_vector(1 downto 0);
+    enable: in std_logic;
+    reset: in std_logic;
+    validWay: out std_logic
+);
 end MRUArray;
 
 architecture behavioral of MRUArray is
     type dataArray is array (63 downto 0) of integer;
     signal w0Array: dataArray:= (others => 0);
     signal w1Array: dataArray:= (others => 0);
-    signal integeredAddress : integer := to_integer(unsigned(address));
+    signal integeredAddress : integer := to_integer(unsigned(index));
     signal lastWay: std_logic;
     signal lastAddress: std_logic_vector(5 downto 0);
     signal way:std_logic;
     begin
-        way <= w_validNo(1) or (not w_validNo(0));
-        integeredAddress <= to_integer(unsigned(address));
+        way <= w_valids(1) or (not w_valids(0));
+        integeredAddress <= to_integer(unsigned(index));
         process(clk)
         begin
             if rising_edge(clk) then
@@ -38,7 +38,7 @@ architecture behavioral of MRUArray is
                 lastWay <= 'Z';
                 lastAddress <= "ZZZZZZ";
             elsif enable = '1' then
-                if (way /= lastWay or address /= lastAddress) the
+                if (way /= lastWay or index /= lastAddress) the
                     if way = '0' then
                         w0Array(integeredAddress) <= w0Array(integeredAddress) + 1;
                     elsif way = '1' then
@@ -46,7 +46,7 @@ architecture behavioral of MRUArray is
                     end if;
                 end if;
                 lastWay <= way;
-                lastAddress <= address;
+                lastAddress <= index;
             end if;
             if w0Array(integeredAddress) >= w1Array(integeredAddress) then
                 validWay <= '1';
