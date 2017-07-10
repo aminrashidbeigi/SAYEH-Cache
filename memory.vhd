@@ -1,72 +1,58 @@
+--------------------------------------------------------------------------------
+-- Author:        Parham Alvani (parham.alvani@gmail.com)
+--
+-- Create Date:   16-03-2017
+-- Module Name:   memory.vhd
+--------------------------------------------------------------------------------
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity Memory is
+entity memory is
 	generic (blocksize : integer := 1024);
-	port (
-	clk, ReadMem, WriteMem : in std_logic;
-	AddressBus: in std_logic_vector (9 downto 0);
-	DataBus : inout std_logic_vector (15 downto 0);
+	port(
+	clk, readmem, writemem : in std_logic;
+	addressbus: in std_logic_vector (9 downto 0);
+	input : in std_logic_vector (31 downto 0);
+	output : out std_logic_vector (31 downto 0);
 	memdataready : out std_logic
 	);
-end entity;
+end entity memory;
 
 architecture behavioral of memory is
-	type mem is array (0 to blocksize - 1) of std_logic_vector (15 downto 0);
-	begin
-		process (clk)
+	type mem is array (0 to blocksize - 1) of std_logic_vector (31 downto 0);
+begin
+	process (clk)
 		variable buffermem : mem := (others => (others => '0'));
 		variable ad : integer;
 		variable init : boolean := true;
-		begin
-			if init = true then
-				-- some initiation
-				buffermem(0) := "0011110100000110";
+	begin
+		if init = true then
 
-	      -- mil r0, 01011101
-	      buffermem(1) := "1111000001011101";
+			init := false;
+		end if;
 
-	      -- mih r0, 00000101
-	      buffermem(2) := "1111000100000101";
+		--databus <= (others => 'Z');
+		--memdataready <= '0';
 
-	      -- mil r1, 00000001
-	      buffermem(3) := "1111010000000001";
+		if  clk'event and clk = '1' then
+			ad := to_integer(unsigned(addressbus));
 
-	      -- mih r1, 00000000
-	      buffermem(4) := "1111010100000000";
-
-	      -- add r1, r0
-	      buffermem(5) := "0000000010110100";
-
-	      buffermem(65) := "0011001100110011";
-
-	      buffermem(129) := "1100110011001100";
-
-				buffermem(193) := "0101010101010101";
-				init := false;
-			end if;
-
-			memdataready <= '0';
-
-			if  clk'event and clk = '1' then
-				ad := to_integer(unsigned(addressbus));
-
-				if readmem = '1' then -- Readiing :)
-					memdataready <= '1';
-					if ad >= blocksize then
-						databus <= (others => 'Z');
-					else
-						databus <= buffermem(ad);
-					end if;
-				elsif writemem = '1' then -- Writing :)
-					memdataready <= '1';
-					if ad < blocksize then
-						buffermem(ad) := databus;
-					end if;
-				elsif readmem = '0' then
-					databus <= (others => 'Z');
+			if readmem = '1' then -- Readiing :)
+				memdataready <= '1';
+				if ad >= blocksize then
+					output <= (others => 'Z');
+				else
+					output <= buffermem(ad);
 				end if;
+			elsif writemem = '1' then -- Writing :)
+				memdataready <= '1';
+				if ad < blocksize then
+					buffermem(ad) := input;
+				end if;
+			else
+			  memdataready <= '0';
 			end if;
-		end process;
+		end if;
+	end process;
 end architecture behavioral;

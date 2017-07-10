@@ -79,7 +79,8 @@ architecture behavioral of Datapath is
         reset_n0: OUT std_logic;
         reset_n1: OUT std_logic;
         MRUEnable: OUT std_logic;
-        MRUReset : OUT std_logic
+        MRUReset : OUT std_logic;
+        MRUWay : in std_logic
         );
     end component;
 
@@ -146,7 +147,7 @@ architecture behavioral of Datapath is
     MRUArray_module : MRUArray port map (clk, index, w0_valid, w0_valid, MRUEnable, MRUReset, way);
     CacheController_module : CacheController port map(clk, hit, w0_valid, w1_valid, is_read, is_write, cache_data_ready, mem_data_ready,
         tag_valid_out1(4), tag_valid_out2(4), invalidate0, invalidate1, mem_wren, read_mem, wren0, wren1,reset_n0, reset_n1,
-        MRUEnable, MRUReset);
+        MRUEnable, MRUReset, way);
     DataSelector_module : DataSelector port map(clk, is_read, is_write, mem_out, inData, input_data);
 
     CacheDataSelection : process(clk)

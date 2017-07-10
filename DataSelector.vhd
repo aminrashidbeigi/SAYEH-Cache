@@ -8,15 +8,16 @@ entity DataSelector is
     port(
     clk: IN std_logic;
     is_read: IN std_logic;
-    is_write : IN std_logic_vector(5 downto 0);
-    memData : INOUT std_logic;
+    is_write : IN std_logic;
+    memData : IN std_logic_vector(31 downto 0);
     cacheData : IN std_logic_vector(31 downto 0);
     data : OUT std_logic_vector(31 downto 0)
     );
 end DataSelector;
 
 architecture behavioral of DataSelector is
-    identifier : process(clk)
+    begin
+	 process(clk)
     begin
         if is_write = '1' then
             data <= cacheData;

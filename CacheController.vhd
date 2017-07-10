@@ -25,7 +25,8 @@ entity CacheController is
     reset_n0: OUT std_logic;
     reset_n1: OUT std_logic;
     MRUEnable: OUT std_logic;
-    MRUReset : OUT std_logic
+    MRUReset : OUT std_logic;
+    MRUWay : in std_logic
     );
 end CacheController;
 
@@ -53,7 +54,7 @@ architecture behavioral of CacheController is
             read_mem <= '0';
             reset_n0 <= '0';
             reset_n1 <= '0';
-            MRUEnable <= '1';
+            MRUEnable <= '0';
             MRUReset <= '0';
 
             case(current_state) is
@@ -69,6 +70,7 @@ architecture behavioral of CacheController is
 
                 when read_state =>
                     if hit = '1' then
+                        MRUEnable <= '1';
                         next_state <= reset_state;
                     else
                         read_mem <= '1';
@@ -97,8 +99,16 @@ architecture behavioral of CacheController is
                 when write_to_cache_state =>
                     if tva0valid = '0' then
                         wren0 <= '1';
+                        invalidate0 <= '0';
                     elsif tva1valid = '0' then
                         wren1 <= '1';
+                        invalidate1 <= '0';
+                    elsif MRUWay = '1' then
+                        wren1 <= '1';
+                        invalidate1 <= '0';
+                    elsif MRUWay = '0' then
+                        wren0 <= '1';
+                        invalidate0 <= '0';
                     end if;
                     next_state <= reset_state;
 
