@@ -25,7 +25,7 @@ architecture behavioral of MRUArray is
     signal lastAddress: std_logic_vector(5 downto 0);
     signal way: std_logic;
     begin
-        way <= w1_valid or (not w0_valid);
+        way <= w1_valids or (not w0_valid);
         integeredAddress <= to_integer(unsigned(index));
         process(clk)
         begin
@@ -39,15 +39,11 @@ architecture behavioral of MRUArray is
                 lastWay <= 'Z';
                 lastAddress <= "ZZZZZZ";
             elsif enable = '1' then
-                if (way /= lastWay or index /= lastAddress) then
-                    if way = '0' then
-                        w0Array(integeredAddress) <= w0Array(integeredAddress) + 1;
-                    elsif way = '1' then
-                        w1Array(integeredAddress) <= w1Array(integeredAddress) + 1;
-                    end if;
+                if way = '0' then
+                    w0Array(integeredAddress) <= w0Array(integeredAddress) + 1;
+                elsif way = '1' then
+                    w1Array(integeredAddress) <= w1Array(integeredAddress) + 1;
                 end if;
-                lastWay <= way;
-                lastAddress <= index;
             end if;
             if w0Array(integeredAddress) >= w1Array(integeredAddress) then
                 validWay <= '1';
@@ -56,5 +52,4 @@ architecture behavioral of MRUArray is
             end if;
         end if;
         end process;
-
 end behavioral;
