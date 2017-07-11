@@ -25,9 +25,11 @@ architecture behavioral of TagValidArray is
         begin
             if wren = '1' then
                 tag_valid(to_integer(unsigned(address)))(3 downto 0) <= wrdata;
-            end if;
-            if invalidate = '1' then
-                tag_valid(to_integer(unsigned(address)))(4) <= not invalidate;
+                if invalidate = '1' then
+                    tag_valid(to_integer(unsigned(address)))(4) <= '0';
+                elsif invalidate = '0' then
+                    tag_valid(to_integer(unsigned(address)))(4) <= '1';
+                end if;
             end if;
         end process;
 end behavioral;
