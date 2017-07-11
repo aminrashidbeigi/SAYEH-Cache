@@ -74,8 +74,10 @@ architecture behavioral of Datapath is
         invalidate1 : out std_logic;
         write_mem: OUT std_logic;
         read_mem : OUT std_logic;
-        wren0: OUT std_logic;
-        wren1: OUT std_logic;
+        data_array0_enable: OUT std_logic;
+        data_array1_enable: OUT std_logic;
+        tag_valid0_enable: OUT std_logic;
+        tag_valid1_enable: OUT std_logic;
         reset_n0: OUT std_logic;
         reset_n1: OUT std_logic;
         MRUEnable: OUT std_logic;
@@ -87,7 +89,6 @@ architecture behavioral of Datapath is
 
     component memory is
     	generic (blocksize : integer := 1024);
-
     	port (clk, readmem, writemem : in std_logic;
     		addressbus: in std_logic_vector (9 downto 0);
     		input : in std_logic_vector (31 downto 0);
@@ -95,18 +96,17 @@ architecture behavioral of Datapath is
     		memdataready : out std_logic);
     end component;
 
-	component MRUArray is
-
-    port(
-    clk: in std_logic;
-    index: in std_logic_vector(5 downto 0);
-    w0_valid: in std_logic;
-    w1_valid: in std_logic;
-    enable: in std_logic;
-    reset: in std_logic;
-    validWay: out std_logic
-);
-	end component;
+    component MRUArray is
+        port(
+        clk: in std_logic;
+        index: in std_logic_vector(5 downto 0);
+        w0_valid: in std_logic;
+        w1_valid: in std_logic;
+        enable: in std_logic;
+        reset: in std_logic;
+        validWay: out std_logic
+        );
+    end component;
 
     component DataSelector is
         port(
@@ -126,28 +126,28 @@ architecture behavioral of Datapath is
     signal tag_valid_out1 : std_logic_vector(4 downto 0);
     signal tag_valid_out2 : std_logic_vector(4 downto 0);
     signal reset_n, invalidate, w0_valid, w1_valid, way, MRUEnable, MRUReset, hit, read_mem,
-     mem_data_ready, mem_wren,wren0, wren1, reset_n0, reset_n1, invalidate0, invalidate1, cache_data_ready: std_logic;
+     mem_data_ready, data_array0_enable, data_array1_enable, mem_wren,tag_valid0_enable, tag_valid1_enable, reset_n0, reset_n1, invalidate0, invalidate1, cache_data_ready: std_logic;
     signal mem_out : std_logic_vector(31 downto 0);
 
 
 	begin
 
-	tag <= address(9 downto 6);
+    tag <= address(9 downto 6);
     index <= address(5 downto 0);
-	 cache_data_ready <= '1';
+    cache_data_ready <= '1';
 
-    DataArray_module1 : DataArray port map (clk, index, wren0, input_data, data_array_out_data1);
-    DataArray_module2 : DataArray port map (clk, index, wren1, input_data, data_array_out_data2);
+    DataArray_module1 : DataArray port map (clk, index, data_array0_enable, input_data, data_array_out_data1);
+    DataArray_module2 : DataArray port map (clk, index, data_array1_enable, input_data, data_array_out_data2);
 
-    TagValidArray_module1 : TagValidArray port map (clk, reset_n0, index, wren0, invalidate0, tag, tag_valid_out1);
-    TagValidArray_module2 : TagValidArray port map (clk, reset_n1, index, wren1, invalidate1, tag, tag_valid_out2);
+    TagValidArray_module1 : TagValidArray port map (clk, reset_n0, index, tag_valid0_enable, invalidate0, tag, tag_valid_out1);
+    TagValidArray_module2 : TagValidArray port map (clk, reset_n1, index, tag_valid1_enable, invalidate1, tag, tag_valid_out2);
 
     MissHitLogic_module : MissHitLogic port map(tag, tag_valid_out1, tag_valid_out2, hit, w0_valid, w1_valid);
     memory_module : memory port map (clk, is_read, is_write, address, inData, mem_out, mem_data_ready);
-    MRUArray_module : MRUArray port map (clk, index, w0_valid, w0_valid, MRUEnable, MRUReset, way);
+    MRUArray_module : MRUArray port map (clk, index, w0_valid, w1_valid, MRUEnable, MRUReset, way);
     CacheController_module : CacheController port map(clk, hit, w0_valid, w1_valid, is_read, is_write, cache_data_ready, mem_data_ready,
-        tag_valid_out1(4), tag_valid_out2(4), invalidate0, invalidate1, mem_wren, read_mem, wren0, wren1,reset_n0, reset_n1,
-        MRUEnable, MRUReset, way);
+        tag_valid_out1(4), tag_valid_out2(4), invalidate0, invalidate1, mem_wren, read_mem, data_array0_enable, data_array1_enable,
+        tag_valid0_enable, tag_valid1_enable, reset_n0, reset_n1, MRUEnable, MRUReset, way);
     DataSelector_module : DataSelector port map(clk, is_read, is_write, mem_out, inData, input_data);
 
     CacheDataSelection : process(clk)

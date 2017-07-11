@@ -20,8 +20,10 @@ entity CacheController is
     invalidate1 : out std_logic;
     write_mem: OUT std_logic;
     read_mem : OUT std_logic;
-    wren0: OUT std_logic;
-    wren1: OUT std_logic;
+    data_array0_enable: OUT std_logic;
+    data_array1_enable: OUT std_logic;
+    tag_valid0_enable: OUT std_logic;
+    tag_valid1_enable: OUT std_logic;
     reset_n0: OUT std_logic;
     reset_n1: OUT std_logic;
     MRUEnable: OUT std_logic;
@@ -48,8 +50,10 @@ architecture behavioral of CacheController is
        begin
             invalidate0 <= '0';
             invalidate1 <= '0';
-				wren0 <= '0';
-				wren1 <= '0';
+            data_array0_enable <= '0';
+            data_array1_enable <= '0';
+            tag_valid0_enable <= '0';
+            tag_valid1_enable <= '0';
             write_mem <= '0';
             read_mem <= '0';
             reset_n0 <= '0';
@@ -65,6 +69,7 @@ architecture behavioral of CacheController is
                     if (is_read = '1') then
                         next_state <= read_state;
                     elsif (is_write = '1') then
+                        write_mem <= '1';
                         next_state <= write_state;
                     end if;
 
@@ -80,11 +85,11 @@ architecture behavioral of CacheController is
                 when write_state =>
                     if w0_valid = '1' then
                         invalidate0 <= '1';
-                        wren0 <= '1';
+                        tag_valid0_enable <= '1';
                     end if;
                     if w1_valid = '1' then
                         invalidate1 <= '1';
-                        wren1 <= '1';
+                        tag_valid1_enable <= '1';
                     end if;
                     next_state <= reset_state;
 
@@ -98,16 +103,20 @@ architecture behavioral of CacheController is
 
                 when write_to_cache_state =>
                     if tva0valid = '0' then
-                        wren0 <= '1';
+                        data_array0_enable <= '1';
+                        tag_valid0_enable <= '1';
                         invalidate0 <= '0';
                     elsif tva1valid = '0' then
-                        wren1 <= '1';
+                        data_array1_enable <= '1';
+                        tag_valid1_enable <= '1';
                         invalidate1 <= '0';
                     elsif MRUWay = '1' then
-                        wren1 <= '1';
+                        data_array1_enable <= '1';
+                        tag_valid1_enable <= '1';
                         invalidate1 <= '0';
                     elsif MRUWay = '0' then
-                        wren0 <= '1';
+                        data_array0_enable <= '1';
+                        tag_valid0_enable <= '1';
                         invalidate0 <= '0';
                     end if;
                     next_state <= reset_state;
