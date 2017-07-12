@@ -83,6 +83,7 @@ architecture behavioral of CacheController is
                     end if;
 
                 when write_state =>
+                    write_mem <= '1';
                     if w0_valid = '1' then
                         invalidate0 <= '1';
                         tag_valid0_enable <= '1';
